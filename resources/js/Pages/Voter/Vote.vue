@@ -2,7 +2,10 @@
   <DashboardLayout page-title="Vote Now" page-subtitle="Cast your votes carefully. Once submitted, votes cannot be changed.">
     <div class="mx-auto flex max-w-6xl flex-col gap-6">
       <section v-if="activeElections.length > 1" class="vote-election-selector">
-        <h2 class="vote-selector-title">📋 Select an election to vote in</h2>
+        <h2 class="vote-selector-title">
+          <FileText class="inline-block mr-2" :size="20" />
+          Select an election to vote in
+        </h2>
         <div class="vote-selector-tabs">
           <Link
             v-for="elec in activeElections"
@@ -17,12 +20,15 @@
       </section>
 
       <header class="vote-header">
-        <h1 class="vote-header-title">🗳️ {{ election.title }}</h1>
+        <h1 class="vote-header-title">
+          <Vote class="inline-block mr-2" :size="24" />
+          {{ election.title }}
+        </h1>
         <p class="vote-header-subtitle">Cast your votes carefully. Once submitted, votes cannot be changed.</p>
       </header>
 
       <div v-if="validationMessage" class="vote-validation-alert">
-        <span>⚠️</span>
+        <AlertTriangle class="inline-block mr-2" :size="16" />
         <p>{{ validationMessage }}</p>
       </div>
 
@@ -66,9 +72,13 @@
         </div>
 
         <div class="form-actions vote-actions">
-          <Link :href="urls.voter.dashboard" class="btn btn-secondary">← Back to dashboard</Link>
+          <Link :href="urls.voter.dashboard" class="btn btn-secondary">
+            <ArrowLeft class="inline-block mr-2" :size="16" />
+            Back to dashboard
+          </Link>
           <button type="submit" class="btn btn-success" :disabled="!canSubmit">
-            {{ form.processing ? 'Submitting...' : '✓ Submit your vote' }}
+            {{ form.processing ? 'Submitting...' : `Submit your vote` }}
+            <Check v-if="!form.processing" class="inline-block ml-2" :size="16" />
           </button>
         </div>
       </form>
@@ -80,6 +90,7 @@
 import { Link, useForm, usePage } from '@inertiajs/inertia-vue3';
 import { ref, computed, watch } from 'vue';
 import DashboardLayout from '../../Layouts/DashboardLayout.vue';
+import { FileText, Vote, AlertTriangle, Check, ArrowLeft } from 'lucide-vue-next';
 
 const props = defineProps({
   election: { type: Object, required: true },
@@ -139,7 +150,7 @@ function submitVote() {
   }
   form.election_id = props.election.id;
   form.votes = votes.value;
-  form.post(urls.voter.submit_vote);
+  form.post(urls.voter?.submit_vote || '/voter/vote');
 }
 </script>
 

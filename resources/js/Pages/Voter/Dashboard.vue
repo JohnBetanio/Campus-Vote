@@ -4,8 +4,14 @@
     page-subtitle="Cast your vote and track election results."
   >
     <template #actions>
-      <Link :href="urls.voter.vote" class="btn btn-primary">🗳️ Vote Now</Link>
-      <Link :href="urls.voter.results" class="btn btn-secondary">View Results</Link>
+      <Link :href="urls.voter.vote" class="btn btn-primary">
+        <Vote class="inline-block mr-2" :size="16" />
+        Vote Now
+      </Link>
+      <Link :href="urls.voter.results" class="btn btn-secondary">
+        <BarChart3 class="inline-block mr-2" :size="16" />
+        View Results
+      </Link>
     </template>
 
     <div class="dashboard-content" style="max-width: 1280px; margin: 0 auto">
@@ -22,7 +28,9 @@
           class="kpi-card kpi-card--action"
           title="View your vote history"
         >
-          <div class="kpi-card__icon" aria-hidden="true">VH</div>
+          <div class="kpi-card__icon" aria-hidden="true">
+            <FileText :size="24" />
+          </div>
           <div class="kpi-card__value">Vote History</div>
           <div class="kpi-card__detail">Review all your submitted votes across past campus elections</div>
           <span class="kpi-card__cta">Open history</span>
@@ -32,7 +40,9 @@
           class="kpi-card kpi-card--action"
           title="View election results"
         >
-          <div class="kpi-card__icon" aria-hidden="true">ER</div>
+          <div class="kpi-card__icon" aria-hidden="true">
+            <BarChart3 :size="24" />
+          </div>
           <div class="kpi-card__value">Election Results</div>
           <div class="kpi-card__detail">See current and past results with live updates when voting is active</div>
           <span class="kpi-card__cta">View results</span>
@@ -42,7 +52,9 @@
           class="kpi-card kpi-card--action"
           title="Manage your profile"
         >
-          <div class="kpi-card__icon" aria-hidden="true">PR</div>
+          <div class="kpi-card__icon" aria-hidden="true">
+            <User :size="24" />
+          </div>
           <div class="kpi-card__value">My Profile</div>
           <div class="kpi-card__detail">Keep your voter information up to date and secure</div>
           <span class="kpi-card__cta">Manage profile</span>
@@ -51,7 +63,10 @@
 
       <!-- Recent Winners Announcement -->
       <div v-if="recentWinners && recentWinners.length > 0" class="card recent-winners-card">
-        <h3 class="recent-winners-title">Recent Election Winners</h3>
+        <h3 class="recent-winners-title">
+          <Trophy class="inline-block mr-2" :size="20" />
+          Recent Election Winners
+        </h3>
         <ul class="recent-winners-list">
           <li v-for="rw in recentWinners" :key="rw.id">
             <template v-if="rw.winners && Object.keys(rw.winners).length">
@@ -75,25 +90,34 @@
           >
             <div class="election-card-header">
               <h3 class="election-card-title">{{ election.title }}</h3>
-              <p class="election-card-date">📅 Created {{ formatDate(election.created_at) }}</p>
+              <p class="election-card-date">
+                <Clock class="inline-block mr-2" :size="14" />
+                Created {{ formatDate(election.created_at) }}
+              </p>
             </div>
 
             <div class="election-card-body">
               <div class="election-stat">
-                <span class="election-stat-label">📌 Positions:</span>
+                <span class="election-stat-label">Positions:</span>
                 <span class="election-stat-value">{{ election.positions_count }}</span>
               </div>
               <div class="election-stat">
-                <span class="election-stat-label">👥 Candidates:</span>
+                <span class="election-stat-label">Candidates:</span>
                 <span class="election-stat-value">{{ election.candidates_count }}</span>
               </div>
               <div class="election-stat">
-                <span class="election-stat-label">🗳️ Votes Cast:</span>
+                <span class="election-stat-label">Votes Cast:</span>
                 <span class="election-stat-value" style="color: #999">Hidden</span>
               </div>
 
-              <span v-if="!election.has_voted" class="election-status">READY TO VOTE</span>
-              <span v-else class="election-status">✓ VOTED</span>
+              <span v-if="!election.has_voted" class="election-status">
+                <Vote class="inline-block mr-1" :size="14" />
+                READY TO VOTE
+              </span>
+              <span v-else class="election-status">
+                <FileText class="inline-block mr-1" :size="14" />
+                VOTED
+              </span>
             </div>
 
             <div class="election-card-footer">
@@ -102,9 +126,15 @@
                 :href="getVoteUrl(election.id)"
                 class="vote-btn-link"
               >
-                <button class="vote-btn">🗳️ Vote Now</button>
+                <button class="vote-btn">
+                  <Vote class="inline-block mr-2" :size="16" />
+                  Vote Now
+                </button>
               </Link>
-              <button v-else class="voted-badge" disabled>✓ You Voted</button>
+              <button v-else class="voted-badge" disabled>
+                <FileText class="inline-block mr-2" :size="16" />
+                You Voted
+              </button>
             </div>
           </div>
         </div>
@@ -140,6 +170,7 @@
 <script setup>
 import { Link, usePage } from '@inertiajs/inertia-vue3';
 import DashboardLayout from '../../Layouts/DashboardLayout.vue';
+import { Vote, BarChart3, User, FileText, Trophy, Clock } from 'lucide-vue-next';
 
 const props = defineProps({
   voter: { type: Object, default: null },
@@ -164,7 +195,8 @@ function formatDate(val) {
 }
 
 function getVoteUrl(electionId) {
-  return urls.voter.vote + '?election_id=' + electionId;
+  const base = urls.voter?.vote || '/voter/vote';
+  return `${base}?election_id=${electionId}`;
 }
 </script>
 

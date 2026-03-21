@@ -8,7 +8,7 @@
     <div class="edit-form-container">
       <div v-if="flash.success" class="success-alert">{{ flash.success }}</div>
 
-      <form @submit.prevent="form.put(urls.voter.profile_update)">
+      <form @submit.prevent="form.put(urls.voter?.profile_update || '/voter/profile')">
         <div class="form-section">
           <div class="form-section-title">👤 Personal Information</div>
           <div class="form-group">

@@ -1,24 +1,38 @@
 <template>
   <DashboardLayout page-title="Your Vote History" page-subtitle="Review all your submitted votes across past elections.">
     <div class="votes-header">
-      <h1 class="votes-header-title">📋 Your Vote History</h1>
+      <h1 class="votes-header-title">
+        <FileText class="inline-block mr-2" :size="24" />
+        Your Vote History
+      </h1>
       <p class="votes-header-subtitle">Review all your submitted votes across all elections</p>
     </div>
 
     <template v-if="votesByElection.length">
       <div v-for="item in votesByElection" :key="item.election.id" class="election-votes-group">
         <h3 class="election-title-header">{{ item.election.title }}</h3>
-        <p class="election-date-info">📅 Election Created: {{ formatDate(item.election.created_at) }}</p>
+        <p class="election-date-info">
+          <Clock class="inline-block mr-2" :size="14" />
+          Election Created: {{ formatDate(item.election.created_at) }}
+        </p>
         <div class="votes-grid">
           <div v-for="(positionVotes, positionName) in item.votes" :key="positionName">
             <div v-for="(vote, vIdx) in positionVotes" :key="vIdx" class="vote-card">
               <div class="position-name">{{ positionName }}</div>
               <div class="candidate-voted">
-                <div class="candidate-avatar">👤</div>
+                <div class="candidate-avatar">
+                  <User :size="20" />
+                </div>
                 <div class="candidate-name">{{ vote.candidate_name }}</div>
               </div>
-              <span class="vote-badge">✓ Voted</span>
-              <div class="vote-timestamp">🕐 {{ formatDate(vote.created_at) }}</div>
+              <span class="vote-badge">
+                <Check class="inline-block mr-1" :size="14" />
+                Voted
+              </span>
+              <div class="vote-timestamp">
+                <Clock class="inline-block mr-2" :size="14" />
+                {{ formatDate(vote.created_at) }}
+              </div>
             </div>
           </div>
         </div>
@@ -29,10 +43,15 @@
     </template>
 
     <div v-else class="empty-state-container">
-      <div class="empty-state-icon">🗳️</div>
+      <div class="empty-state-icon">
+        <Vote :size="48" />
+      </div>
       <div class="empty-state-title">No Votes Yet</div>
       <p class="empty-state-text">You haven't cast any votes yet. Participate in active elections to see your voting history here.</p>
-      <Link :href="urls.voter.dashboard" class="back-btn">← Back to Dashboard</Link>
+      <Link :href="urls.voter.dashboard" class="back-btn">
+        <ArrowLeft class="inline-block mr-2" :size="16" />
+        Back to Dashboard
+      </Link>
     </div>
   </DashboardLayout>
 </template>
@@ -40,6 +59,7 @@
 <script setup>
 import { Link, usePage } from '@inertiajs/inertia-vue3';
 import DashboardLayout from '../../Layouts/DashboardLayout.vue';
+import { FileText, Clock, User, Check, Vote, ArrowLeft } from 'lucide-vue-next';
 
 defineProps({
   votesByElection: { type: Array, default: () => [] },
