@@ -15,7 +15,7 @@
 
 <body>
     <div class="dashboard-container">
-        {{-- Donezo-style sidebar: light background with green accents --}}
+
         <aside class="sidebar">
             <div class="sidebar-header">
                 <a href="{{ auth()->guard('voter')->check() ? route('voter.dashboard') : route('admin.dashboard') }}"

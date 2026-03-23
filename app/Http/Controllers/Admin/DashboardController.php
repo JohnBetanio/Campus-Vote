@@ -81,7 +81,7 @@ class DashboardController extends Controller
                 'votes_count' => $election->votes->count(),
                 'participation_rate' => $electionParticipationRate,
                 'positions_count' => $election->positions->count(),
-                'edit_url' => route('admin.elections.edit', $election),
+                'edit_url' => route('admin.elections.edit',  $election),
             ];
         })->values()->all();
 

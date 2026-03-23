@@ -176,8 +176,8 @@
             <div class="voter-row">
                 <div class="voter-info">
                     <div class="voter-name">{{ $voter->name }}</div>
-                    <div class="voter-email">📧 {{ $voter->email }}</div>
-                    <div class="voter-course">📚 Course: {{ $voter->course ?? 'Undecided' }}</div>
+                    <div class="voter-email">{{ $voter->email }}</div>
+                    <div class="voter-course">Course: {{ $voter->course ?? 'Undecided' }}</div>
                 </div>
                 <div class="voter-actions">
                     <form method="POST" action="{{ route('admin.voters.destroy', $voter) }}" style="margin: 0;">

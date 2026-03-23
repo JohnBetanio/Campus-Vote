@@ -52,7 +52,8 @@ Route::prefix('voter')->group(function () {
 
     // Authenticated routes (logged in)
     Route::middleware('auth:voter')->group(function () {
-        Route::post('logout', [VoterAuthController::class, 'logout'])->name('voter.logout');
+        // Accept both GET and POST for logout to avoid method mismatch
+        Route::match(['GET', 'POST'], 'logout', [VoterAuthController::class, 'logout'])->name('voter.logout');
     });
 });
 
@@ -71,7 +72,8 @@ Route::prefix('admin')->group(function () {
 
     // Authenticated routes (logged in)
     Route::middleware('auth:admin')->group(function () {
-        Route::post('logout', [AdminAuthController::class, 'logout'])->name('admin.logout');
+        // Accept both GET and POST for logout to avoid method mismatch
+        Route::match(['GET', 'POST'], 'logout', [AdminAuthController::class, 'logout'])->name('admin.logout');
     });
 });
 

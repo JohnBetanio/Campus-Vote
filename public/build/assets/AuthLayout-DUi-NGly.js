@@ -1,1 +1,0 @@
-import{_ as o}from"./_plugin-vue_export-helper-DlAUqK2U.js";import{e as t,q as r,o as s}from"./app-MNItMn5t.js";const c={},n={class:"auth-container"};function a(e,_){return s(),t("div",n,[r(e.$slots,"default")])}const l=o(c,[["render",a]]);export{l as A};

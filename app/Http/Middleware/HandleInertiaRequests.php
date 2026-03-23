@@ -38,6 +38,8 @@ class HandleInertiaRequests extends Middleware
     {
         return [
             ...parent::share($request),
+            // Used by JS to submit traditional POST forms safely (e.g. logout)
+            'csrf' => csrf_token(),
             'auth' => [
                 'voter' => $request->user('voter') ? [
                     'id' => $request->user('voter')->id,
@@ -68,8 +70,9 @@ class HandleInertiaRequests extends Middleware
      */
     private function sharedUrls(Request $request): array
     {
-        $safeRoute = function (string $name, mixed ...$params) {
-            return Route::has($name) ? route($name, ...$params) : '#';
+        // IMPORTANT: generate relative URLs (avoid APP_URL host mismatches like localhost vs 127.0.0.1)
+        $safeRoute = function (string $name, array $params = []) {
+            return Route::has($name) ? route($name, $params, false) : '#';
         };
 
         return [
