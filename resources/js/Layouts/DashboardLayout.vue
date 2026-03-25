@@ -78,10 +78,7 @@
                     >Results</Link
                 >
                 <Link
-                    :href="
-                        urls.admin?.announcements_index ||
-                        '/admin/announcements'
-                    "
+                    :href="urls.admin?.announcements_index ||'/admin/announcements'"
                     class="nav-item"
                     :class="{ active: isAnnouncementsPage }"
                     >Announcements</Link

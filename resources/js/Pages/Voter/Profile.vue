@@ -112,40 +112,8 @@ const page = usePage();
 const urls = page.props.urls || { voter: {} };
 function submitLogout() {
     const logoutUrl = urls.voter?.logout || "/voter/logout";
-    const token =
-        page.props.csrf ||
-        getCookie("XSRF-TOKEN") ||
-        document
-            .querySelector('meta[name=\"csrf-token\"]')
-            ?.getAttribute("content") ||
-        "";
-
-    const form = document.createElement("form");
-    form.method = "POST";
-    form.action = logoutUrl;
-
-    const input = document.createElement("input");
-    input.type = "hidden";
-    input.name = "_token";
-    input.value = token;
-    form.appendChild(input);
-
-    document.body.appendChild(form);
-    form.submit();
-}
-
-function getCookie(name) {
-    if (typeof document === "undefined") return "";
-    const cookies = document.cookie ? document.cookie.split("; ") : [];
-    for (const c of cookies) {
-        const eq = c.indexOf("=");
-        const key = eq === -1 ? c : c.slice(0, eq);
-        if (key === name) {
-            const val = eq === -1 ? "" : c.slice(eq + 1);
-            return decodeURIComponent(val);
-        }
-    }
-    return "";
+    // logout route accepts GET; avoid CSRF friction from stale tokens
+    window.location.href = logoutUrl;
 }
 </script>
 

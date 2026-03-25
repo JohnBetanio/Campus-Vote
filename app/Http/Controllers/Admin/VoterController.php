@@ -15,7 +15,7 @@ class VoterController extends Controller
             'name' => $voter->name,
             'email' => $voter->email,
             'course' => $voter->course,
-            'destroy_url' => route('admin.voters.destroy', $voter),
+            'destroy_url' => route('admin.voters.destroy', $voter, false),
         ])->values()->all();
         return Inertia::render('Admin/Voters', ['voters' => $voters]);
     }

@@ -4,7 +4,7 @@
         page-subtitle="Create, edit, and monitor all elections in the system."
     >
         <template #actions>
-            <Link :href="urls.admin.elections_create" class="btn btn-primary"
+            <Link :href="urls.admin?.elections_create || '/admin/elections/create'" class="btn btn-primary"
                 >+ Create New Election</Link
             >
         </template>
@@ -131,37 +131,99 @@
                         <Edit class="action-icon" :size="16" />
                         Edit Election
                     </Link>
-                    <form
+                    <button
                         v-if="election.status === 'active'"
-                        :action="election.end_url"
-                        method="POST"
-                        class="action-form"
-                        @submit="onEndElection"
+                        type="button"
+                        class="action-btn action-btn-end"
+                        @click="openEndConfirm(election)"
                     >
-                        <input type="hidden" name="_token" :value="csrfToken" />
-                        <button type="submit" class="action-btn action-btn-end">
-                            <Shield class="action-icon" :size="16" />
-                            End Election
-                        </button>
-                    </form>
-                    <form
-                        :action="election.destroy_url"
-                        method="POST"
-                        class="action-form"
-                        @submit="onDeleteElection"
+                        <Shield class="action-icon" :size="16" />
+                        End Election
+                    </button>
+                    <button
+                        type="button"
+                        class="action-btn action-btn-delete"
+                        @click="openDeleteConfirm(election)"
                     >
-                        <input type="hidden" name="_token" :value="csrfToken" />
-                        <input type="hidden" name="_method" value="DELETE" />
-                        <button
-                            type="submit"
-                            class="action-btn action-btn-delete"
-                        >
-                            <Trash2 class="action-icon" :size="16" />
-                            Delete Election
-                        </button>
-                    </form>
+                        <Trash2 class="action-icon" :size="16" />
+                        Delete Election
+                    </button>
                 </div>
             </div>
+
+            <!-- Confirmation modal (replaces browser alert) -->
+            <Teleport to="body">
+                <Transition name="modal-fade">
+                    <div
+                        v-if="confirmModal"
+                        class="confirm-modal-overlay"
+                        role="dialog"
+                        aria-modal="true"
+                        aria-labelledby="confirm-modal-title"
+                        @click.self="closeConfirmModal"
+                    >
+                        <div class="confirm-modal-card">
+                            <div
+                                class="confirm-modal-icon"
+                                :class="
+                                    confirmModal.type === 'end'
+                                        ? 'confirm-modal-icon--end'
+                                        : 'confirm-modal-icon--delete'
+                                "
+                            >
+                                <Shield
+                                    v-if="confirmModal.type === 'end'"
+                                    :size="28"
+                                />
+                                <Trash2 v-else :size="28" />
+                            </div>
+                            <h3 id="confirm-modal-title" class="confirm-modal-title">
+                                {{
+                                    confirmModal.type === "end"
+                                        ? "End this election?"
+                                        : "Delete this election?"
+                                }}
+                            </h3>
+                            <p class="confirm-modal-election-name">
+                                {{ confirmModal.title }}
+                            </p>
+                            <p class="confirm-modal-text">
+                                {{
+                                    confirmModal.type === "end"
+                                        ? "Voting will close and winners will be calculated. This cannot be reversed from the voter side."
+                                        : "All positions, candidates, and vote records tied to this election will be permanently removed."
+                                }}
+                            </p>
+                            <div class="confirm-modal-actions">
+                                <button
+                                    type="button"
+                                    class="confirm-btn confirm-btn--cancel"
+                                    @click="closeConfirmModal"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="button"
+                                    class="confirm-btn"
+                                    :class="
+                                        confirmModal.type === 'end'
+                                            ? 'confirm-btn--end'
+                                            : 'confirm-btn--delete'
+                                    "
+                                    :disabled="confirmProcessing"
+                                    @click="executeConfirm"
+                                >
+                                    {{
+                                        confirmModal.type === "end"
+                                            ? "End election"
+                                            : "Delete permanently"
+                                    }}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </Transition>
+            </Teleport>
 
             <div v-if="elections.length === 0" class="card">
                 <div class="empty-elections-state">
@@ -172,7 +234,7 @@
                         voting process.
                     </p>
                     <Link
-                        :href="urls.admin.elections_create"
+                        :href="urls.admin?.elections_create || '/admin/elections/create'"
                         class="btn btn-primary"
                     >
                         <Plus class="inline-block mr-2" :size="16" />
@@ -185,7 +247,9 @@
 </template>
 
 <script setup>
+import { ref, onMounted, onUnmounted } from "vue";
 import { Link, usePage } from "@inertiajs/inertia-vue3";
+import { Inertia } from "@inertiajs/inertia";
 import DashboardLayout from "../../Layouts/DashboardLayout.vue";
 import { Shield, Users, Trash2, Edit, AlertCircle, FileText, Plus } from 'lucide-vue-next';
 
@@ -197,12 +261,10 @@ const props = defineProps({
 
 const page = usePage();
 const urls = page.props.urls || { admin: {} };
-const csrfToken =
-    typeof document !== "undefined"
-        ? document
-              .querySelector('meta[name="csrf-token"]')
-              ?.getAttribute("content") || ""
-        : "";
+
+/** @type {import('vue').Ref<{ type: 'end' | 'delete'; url: string; title: string } | null>} */
+const confirmModal = ref(null);
+const confirmProcessing = ref(false);
 
 function formatDate(val) {
     if (!val) return "";
@@ -216,23 +278,48 @@ function formatDate(val) {
     });
 }
 
-function onEndElection(e) {
-    if (
-        !confirm(
-            "Are you sure you want to end this election? This action cannot be undone.",
-        )
-    )
-        e.preventDefault();
+function openEndConfirm(election) {
+    confirmModal.value = {
+        type: "end",
+        url: election.end_url,
+        title: election.title,
+    };
 }
 
-function onDeleteElection(e) {
-    if (
-        !confirm(
-            "Are you sure you want to permanently delete this election? This action cannot be undone and all voting data will be lost.",
-        )
-    )
-        e.preventDefault();
+function openDeleteConfirm(election) {
+    confirmModal.value = {
+        type: "delete",
+        url: election.destroy_url,
+        title: election.title,
+    };
 }
+
+function closeConfirmModal() {
+    if (confirmProcessing.value) return;
+    confirmModal.value = null;
+}
+
+function onKeydown(e) {
+    if (e.key === "Escape" && confirmModal.value) closeConfirmModal();
+}
+
+function executeConfirm() {
+    if (!confirmModal.value) return;
+    const { type, url } = confirmModal.value;
+    confirmProcessing.value = true;
+    const done = () => {
+        confirmProcessing.value = false;
+        confirmModal.value = null;
+    };
+    if (type === "end") {
+        Inertia.post(url, {}, { onFinish: done, onError: done });
+    } else {
+        Inertia.delete(url, { onFinish: done, onError: done });
+    }
+}
+
+onMounted(() => window.addEventListener("keydown", onKeydown));
+onUnmounted(() => window.removeEventListener("keydown", onKeydown));
 </script>
 
 <style scoped>
@@ -661,5 +748,157 @@ function onDeleteElection(e) {
     font-size: 16px;
     color: #6b7280;
     margin-bottom: 30px;
+}
+
+/* Modal (teleported to body — keep classes unique for clarity) */
+.confirm-modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: rgba(15, 23, 42, 0.55);
+    backdrop-filter: blur(4px);
+}
+
+.confirm-modal-card {
+    width: 100%;
+    max-width: 420px;
+    background: #fff;
+    border-radius: 16px;
+    padding: 28px 28px 24px;
+    box-shadow:
+        0 25px 50px -12px rgba(0, 0, 0, 0.25),
+        0 0 0 1px rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(226, 232, 240, 0.9);
+    text-align: center;
+}
+
+.confirm-modal-icon {
+    width: 56px;
+    height: 56px;
+    margin: 0 auto 16px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+}
+
+.confirm-modal-icon--end {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    box-shadow: 0 8px 20px rgba(245, 158, 11, 0.35);
+}
+
+.confirm-modal-icon--delete {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    box-shadow: 0 8px 20px rgba(239, 68, 68, 0.35);
+}
+
+.confirm-modal-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0 0 8px;
+    letter-spacing: -0.02em;
+}
+
+.confirm-modal-election-name {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #059669;
+    margin: 0 0 12px;
+    line-height: 1.4;
+}
+
+.confirm-modal-text {
+    font-size: 0.875rem;
+    color: #64748b;
+    line-height: 1.55;
+    margin: 0 0 24px;
+}
+
+.confirm-modal-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.confirm-btn {
+    min-width: 132px;
+    padding: 11px 18px;
+    border-radius: 10px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition:
+        transform 0.15s ease,
+        box-shadow 0.15s ease,
+        opacity 0.15s ease;
+}
+
+.confirm-btn:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.confirm-btn--cancel {
+    background: #f1f5f9;
+    color: #475569;
+    border: 1px solid #e2e8f0;
+}
+
+.confirm-btn--cancel:hover:not(:disabled) {
+    background: #e2e8f0;
+}
+
+.confirm-btn--end {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    color: #fff;
+    box-shadow: 0 4px 14px rgba(245, 158, 11, 0.35);
+}
+
+.confirm-btn--end:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(245, 158, 11, 0.45);
+}
+
+.confirm-btn--delete {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    color: #fff;
+    box-shadow: 0 4px 14px rgba(239, 68, 68, 0.35);
+}
+
+.confirm-btn--delete:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(239, 68, 68, 0.45);
+}
+
+.modal-fade-enter-active,
+.modal-fade-leave-active {
+    transition: opacity 0.2s ease;
+}
+
+.modal-fade-enter-active .confirm-modal-card,
+.modal-fade-leave-active .confirm-modal-card {
+    transition:
+        transform 0.2s ease,
+        opacity 0.2s ease;
+}
+
+.modal-fade-enter-from,
+.modal-fade-leave-to {
+    opacity: 0;
+}
+
+.modal-fade-enter-from .confirm-modal-card,
+.modal-fade-leave-to .confirm-modal-card {
+    transform: scale(0.96) translateY(8px);
+    opacity: 0;
 }
 </style>

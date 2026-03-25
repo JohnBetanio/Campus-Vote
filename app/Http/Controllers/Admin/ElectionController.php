@@ -35,24 +35,24 @@ class ElectionController extends Controller
                 'status' => $election->status,
                 'created_at' => $election->created_at?->toISOString(),
                 'positions_count' => $election->positions->count(),
-                'candidates_count' => $election->positions->sum(fn ($p) => $p->candidates->count()),
+                'candidates_count' => $election->positions->sum(fn($p) => $p->candidates->count()),
                 'votes_cast' => $electionVotedCount,
                 'participation_rate' => $electionParticipationRate,
-                'positions' => $election->positions->map(fn ($p) => [
+                'positions' => $election->positions->map(fn($p) => [
                     'id' => $p->id,
                     'name' => $p->name,
-                    'candidates' => $p->candidates->map(fn ($c) => ['id' => $c->id, 'name' => $c->name])->all(),
+                    'candidates' => $p->candidates->map(fn($c) => ['id' => $c->id, 'name' => $c->name])->all(),
                 ])->all(),
-                'edit_url' => route('admin.elections.edit', $election),
-                'end_url' => route('admin.elections.end', $election),
-                'destroy_url' => route('admin.elections.destroy', $election),
+                'edit_url' => route('admin.elections.edit', $election, false),
+                'end_url' => route('admin.elections.end', $election, false),
+                'destroy_url' => route('admin.elections.destroy', $election, false),
             ];
         })->values()->all();
 
         return Inertia::render('Admin/ManageElections', [
             'elections' => $electionsData,
-            'activeElections' => $activeElections->values()->map(fn ($e) => ['id' => $e->id])->all(),
-            'endedElections' => $endedElections->values()->map(fn ($e) => ['id' => $e->id])->all(),
+            'activeElections' => $activeElections->values()->map(fn($e) => ['id' => $e->id])->all(),
+            'endedElections' => $endedElections->values()->map(fn($e) => ['id' => $e->id])->all(),
         ]);
     }
 
@@ -105,19 +105,19 @@ class ElectionController extends Controller
             'id' => $election->id,
             'title' => $election->title,
             'status' => $election->status,
-            'positions' => $election->positions->map(fn ($p) => [
+            'positions' => $election->positions->map(fn($p) => [
                 'id' => $p->id,
                 'name' => $p->name,
                 'order' => $p->order,
                 'max_votes' => $p->max_votes ?? 1,
-                'candidates' => $p->candidates->map(fn ($c) => ['id' => $c->id, 'name' => $c->name])->all(),
+                'candidates' => $p->candidates->map(fn($c) => ['id' => $c->id, 'name' => $c->name])->all(),
             ])->all(),
         ];
 
         return Inertia::render('Admin/EditElection', [
             'election' => $electionData,
-            'updateUrl' => route('admin.elections.update', $election),
-            'cancelUrl' => route('admin.elections.index'),
+            'updateUrl' => route('admin.elections.update', $election, false),
+            'cancelUrl' => route('admin.elections.index', [], false),
         ]);
     }
 

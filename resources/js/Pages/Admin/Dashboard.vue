@@ -4,10 +4,12 @@
         page-subtitle="Monitor elections, voters, and participation in real-time."
     >
         <template #actions>
-            <Link :href="urls.admin.elections_create" class="btn btn-primary">
+            <Link :href="urls.admin?.elections_create || '/admin/elections/create'" 
+                   class="btn btn-primary">
                 + Add Election
             </Link>
-            <Link :href="urls.admin.elections_index" class="btn btn-secondary">
+            <Link :href="urls.admin?.elections_index || '/admin/elections'" 
+                   class="btn btn-secondary">
                 Manage Elections
             </Link>
         </template>
@@ -110,22 +112,25 @@
                 </h2>
                 <div class="quick-actions-wrap">
                     <Link
-                        :href="urls.admin.elections_create"
+                        :href="
+                        urls.admin?.elections_create ||
+                        '/admin/elections/create'
+                    "
                         class="quick-action-btn"
                         >Create election</Link
                     >
                     <Link
-                        :href="urls.admin.elections_index"
+                        :href="urls.admin?.elections_index || '/admin/elections'"
                         class="quick-action-btn"
                         >Manage elections</Link
                     >
                     <Link
-                        :href="urls.admin.voters_index"
+                        :href="urls.admin?.voters_index || '/admin/voters'"
                         class="quick-action-btn"
                         >Manage voters</Link
                     >
                     <Link
-                        :href="urls.admin.announcements_index"
+                        :href="urls.admin?.announcements_index ||'/admin/announcements'"
                         class="quick-action-btn"
                         >Announcements</Link
                     >

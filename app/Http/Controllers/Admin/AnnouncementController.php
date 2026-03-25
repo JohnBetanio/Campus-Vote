@@ -16,8 +16,8 @@ class AnnouncementController extends Controller
             'content' => $a->content,
             'created_at' => $a->created_at?->toISOString(),
             'updated_at' => $a->updated_at?->toISOString(),
-            'update_url' => route('admin.announcements.update', $a),
-            'destroy_url' => route('admin.announcements.destroy', $a),
+            'update_url' => route('admin.announcements.update', $a, false),
+            'destroy_url' => route('admin.announcements.destroy', $a, false),
         ])->values()->all();
         return Inertia::render('Admin/Announcements', ['announcements' => $announcements]);
     }

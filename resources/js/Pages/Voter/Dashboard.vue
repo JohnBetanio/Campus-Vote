@@ -4,11 +4,11 @@
     page-subtitle="Cast your vote and track election results."
   >
     <template #actions>
-      <Link :href="urls.voter.vote" class="btn btn-primary">
+      <Link :href="urls.voter?.vote || '/voter/vote'" class="btn btn-primary">
         <Vote class="inline-block mr-2" :size="16" />
         Vote Now
       </Link>
-      <Link :href="urls.voter.results" class="btn btn-secondary">
+      <Link :href="urls.voter?.results || '/voter/results'" class="btn btn-secondary">
         <BarChart3 class="inline-block mr-2" :size="16" />
         View Results
       </Link>
@@ -24,7 +24,7 @@
       <!-- Quick action cards -->
       <section class="kpi-grid kpi-grid--actions" aria-label="Quick actions">
         <Link
-          :href="urls.voter.votes"
+          :href="urls.voter?.votes || '/voter/votes'"
           class="kpi-card kpi-card--action"
           title="View your vote history"
         >
@@ -36,7 +36,7 @@
           <span class="kpi-card__cta">Open history</span>
         </Link>
         <Link
-          :href="urls.voter.results"
+          :href="urls.voter?.results || '/voter/results'"
           class="kpi-card kpi-card--action"
           title="View election results"
         >
@@ -48,7 +48,7 @@
           <span class="kpi-card__cta">View results</span>
         </Link>
         <Link
-          :href="urls.voter.profile"
+          :href="urls.voter?.profile || '/voter/profile'"
           class="kpi-card kpi-card--action"
           title="Manage your profile"
         >
@@ -195,8 +195,9 @@ function formatDate(val) {
 }
 
 function getVoteUrl(electionId) {
-  const base = urls.voter?.vote || '/voter/vote';
-  return `${base}?election_id=${electionId}`;
+  const base = urls.voter?.vote;
+  const path = base && base !== '#' && !String(base).includes('undefined') ? base : '/voter/vote';
+  return `${path}?election_id=${electionId}`;
 }
 </script>
 

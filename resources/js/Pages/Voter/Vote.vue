@@ -16,7 +16,7 @@
                     <Link
                         v-for="elec in activeElections"
                         :key="elec.id"
-                        :href="urls.voter.vote + '?election_id=' + elec.id"
+                        :href="voteTabUrl(elec.id)"
                         class="vote-tab"
                         :class="{ active: elec.id === election.id }"
                     >
@@ -156,6 +156,15 @@ const props = defineProps({
 const page = usePage();
 const urls = page.props.urls || { voter: {} };
 
+function voteTabUrl(electionId) {
+    const base = urls.voter?.vote;
+    const path =
+        base && base !== "#" && !String(base).includes("undefined")
+            ? base
+            : "/voter/vote";
+    return `${path}?election_id=${electionId}`;
+}
+
 const validationMessage = ref("");
 const votes = ref(
     Object.fromEntries((props.election.positions || []).map((p) => [p.id, []])),
@@ -196,9 +205,18 @@ function onCandidateChange(position, event) {
 }
 
 const canSubmit = computed(() => {
-    return props.election.positions.every(
-        (p) => selectedCount(p.id) === (p.max_votes || 1),
-    );
+    return props.election.positions.every((p) => {
+        const selected = selectedCount(p.id);
+        const maxVotes = p.max_votes || 1;
+        const candidatesAvailable = (p.candidates || []).length;
+        if (candidatesAvailable >= maxVotes) {
+            // backend requires exact selections when enough candidates exist
+            return selected === maxVotes;
+        }
+        // backend allows between 1 and available when candidates are fewer than max
+        const allowed = Math.max(1, Math.min(maxVotes, candidatesAvailable));
+        return selected >= 1 && selected <= allowed;
+    });
 });
 
 function submitVote() {
